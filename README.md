@@ -71,3 +71,88 @@ Tap your Yubikey. Your configuration is saved.
 ![Challenge-Response Configuration](img/keepass6.png)
 
 > **WARNING:** Test every newly configured Yubikey for a working Challenge-Response configuration!
+
+## Yubikey and sudo and login
+
+You can find an article at [Yubico](https://support.yubico.com/hc/en-us/articles/360016649099-Ubuntu-Linux-Login-Guide-U2F) for for an installation on Ubuntu. This works with Yubikey 4, as well. You can configure your Yubikey to be sufficient for authorization or that you need to tap it after password entry.
+
+> **WARNING:** Use at least two keys!
+
+### Installation and Configuration
+
+First install the PAM module for Yubikey, e.g. `yubico-pam` for Archlinux, `libpam-u2f` for Ubuntu (see [article](https://support.yubico.com/hc/en-us/articles/360016649099-Ubuntu-Linux-Login-Guide-U2F)).
+
+The next steps uses `/etc/Yubico` for configuration, but you can always chose to use `~/.yubico`.
+
+* Insert your Yubikey.
+
+* Run: `pamu2fcfg >>u2f_keys`
+
+* Tap your Yubikey.
+
+* Remove your Yubikey and repeat the previous steps for at least another Yubikey.
+
+* Create config directory: `sudo mkdir /etc/Yubico`
+
+* Move your secrets to Yubico configuration directory: `sudo mv u2f_keys /etc/Yubico/`
+
+* Make sure the right is correct (not necessary for configuration in home):
+
+  ```bash
+  sudo chmod 644 /etc/Yubico/u2f_keys
+  sudo chown root.root /etc/Yubico/u2f_keys
+  ```
+
+### Configure Yubikey to be used for sudo
+
+For Yubikey to be used for sudo you will need to add the following lone to `/etc/pam.d/sudo`:
+
+```pam-config
+auth		sufficient/required	pam_u2f.so	authfile=/etc/Yubico/u2f_keys	cue [cue_prompt=Please tap Yubikey]
+```
+
+See below examples for the correct configuration.
+
+> **WARNING:** Open a new root terminal (`sudo -i`) and keep it open until you are sure the configuration works as expected.
+
+Open the sudo PAM configuration:
+
+```bash
+sudo vim /etc/pam.d/sudo
+```
+
+* If you want Yubikey to be **sufficient** for sudo you can add the module at the top of `/etc/pam.d/sudo`.
+
+  > INFO: In this case you don't need your Yubikey. You can always use your password.
+
+  Example for Archlinux:
+
+  ````pam-config
+  #%PAM-1.0
+  auth		sufficient	pam_u2f.so	authfile=/etc/Yubico/u2f_keys	cue [cue_prompt=Please tap Yubikey]
+  auth		include		system-auth
+  account		include		system-auth
+  session		include		system-auth
+  ````
+
+* If you  want Yubikey to be **required** after/before password entry for sudo you can add at the module before/after the include of system-auth/common-auth in `/etc/pam.d/sudo`.
+
+  > **WARNING:** In this case you will **NEED**  a Yubikey for sudo. If you lose it you need to use other methods to become root or to change `/etc/pam.d/sudo`.
+
+  Example for Archlinux:
+
+  ````pam-config
+  #%PAM-1.0
+  auth		include		system-auth
+  auth		requied		pam_u2f.so	authfile=/etc/Yubico/u2f_keys	cue [cue_prompt=Please tap Yubikey]
+  account		include		system-auth
+  session		include		system-auth
+  ````
+
+### Configure Yubikey to be used for Terminal Login
+
+* TODO
+
+### Configure Yubikey to be used for Desktop Manager Login
+
+* TODO
