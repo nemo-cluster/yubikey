@@ -82,26 +82,23 @@ You can find an article at [Yubico](https://support.yubico.com/hc/en-us/articles
 
 First install the PAM module for Yubikey, e.g. `yubico-pam` for Archlinux, `libpam-u2f` for Ubuntu (see [article](https://support.yubico.com/hc/en-us/articles/360016649099-Ubuntu-Linux-Login-Guide-U2F)).
 
-The next steps uses `/etc/Yubico` for configuration, but you can always chose to use `~/.yubico`.
+The next steps uses `/etc/Yubico` for system-wide configuration, but you can always choose to use user-only configuration in `~/.yubico`.
 
-* Insert your Yubikey.
+1. Insert your Yubikey.
+2. Run: `pamu2fcfg >u2f_keys`
+3. Tap your Yubikey.
+4. Remove your Yubikey. Insert a new Yubikey and do the following steps:
+5. For every following Yubikey append to file with option `-n`: `pamu2fcfg -n >>u2f_keys`
+6. Tap your Yubikey.
+7. Remove the Yubikey and repeat the previous steps 5-7 for the rest of your keys.
+8. Create config directory: `sudo mkdir /etc/Yubico`
+9. Move your secrets to Yubico configuration directory: `sudo mv u2f_keys /etc/Yubico/`
+10. Make sure the right is correct (not necessary for configuration in `~/.yubico`):
 
-* Run: `pamu2fcfg >>u2f_keys`
-
-* Tap your Yubikey.
-
-* Remove your Yubikey and repeat the previous steps for at least another Yubikey.
-
-* Create config directory: `sudo mkdir /etc/Yubico`
-
-* Move your secrets to Yubico configuration directory: `sudo mv u2f_keys /etc/Yubico/`
-
-* Make sure the right is correct (not necessary for configuration in home):
-
-  ```bash
-  sudo chmod 644 /etc/Yubico/u2f_keys
-  sudo chown root.root /etc/Yubico/u2f_keys
-  ```
+```bash
+sudo chmod 644 /etc/Yubico/u2f_keys
+sudo chown root.root /etc/Yubico/u2f_keys
+```
 
 ### Configure Yubikey to be used for sudo
 
