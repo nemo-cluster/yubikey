@@ -4,7 +4,7 @@ We suggest buying at least two [Yubikeys](https://www.yubico.com/products/yubike
 
 ## KeepassXC and Yubikey
 
-You can use a Yubikey for a second secret using Challenge-Response.
+You can use a Yubikey for a second secret using Challenge-Response. This works also with [Keepass2Android](https://play.google.com/store/apps/details?id=keepass2android.keepass2android).
 
 ### Configure Yubikey for Challenge-Response
 
