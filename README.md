@@ -141,7 +141,7 @@ sudo vim /etc/pam.d/sudo
   ````pam-config
   #%PAM-1.0
   auth		include		system-auth
-  auth		requied		pam_u2f.so	authfile=/etc/Yubico/u2f_keys	cue [cue_prompt=Please tap Yubikey]
+  auth		required	pam_u2f.so	authfile=/etc/Yubico/u2f_keys	cue [cue_prompt=Please tap Yubikey]
   account		include		system-auth
   session		include		system-auth
   ````
