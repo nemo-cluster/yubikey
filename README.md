@@ -2,6 +2,82 @@
 
 We suggest buying at least two [Yubikeys](https://www.yubico.com/products/yubikey-5-overview/), e.g. Yubikey NFC and Nano. This way you have one key for your key chain and mobile and one small e.g. for laptops etc.
 
+## SSH and Yubikeys
+
+You can secure your SSH keys with [Yubikeys](https://developers.yubico.com/SSH/). This guide will only discuss securing SSH keys using [FIDO2](https://developers.yubico.com/SSH/Securing_SSH_with_FIDO2.html).
+
+### Configure Yubikey for FIDO2
+
+First you need to configure your Yubikeys for FIDO2.
+
+> **WARNING:** If you forget your PIN or reset FIDO2 credentials, all FIDO2 secrets will be wiped! You should always create secrets on at least two separate keys.
+
+* Install and run the [Yubikey Manager](https://www.yubico.com/support/download/yubikey-manager/). Some OS already offer packages, e.g. Archlinux `yubikey-manager`.
+* Select "Applications" -> "FIDO2".
+
+![FIDO2 Configuration](img/fido21.png)
+
+* Select "Set PIN" if you have not yet configured your Yubikey. If you have already set the PIN, you do not need to do anything else.
+
+![FIDO2 Configuration](img/fido22.png)
+
+* Set a new PIN. Alternatively, you can change your old PIN if you wish. Once the PIN is set, you have a maximum of 8 attempts to enter your PIN correctly, otherwise you will have to reset your FIDO2 credentials.
+
+![FIDO2 Configuration](img/fido23.png)
+
+### Create SSH keys with FIDO2
+
+There are two types of ssh keys, discoverable (resident) and non-discoverable. For a detailed description, see the documentation at [Yubico](https://developers.yubico.com/SSH/Securing_SSH_with_FIDO2.html).
+
+* Discoverable means that the key is stored on your Yubikey and you can copy it to a local machine at any time with `ssh-keygen -K`. You always need your FIDO2 PIN when using discoverable SSH keys.
+* Non-Discoverable means that the key is stored only locally on the machine. You do not need your FIDO2 PIN for non-discoverable SSH keys.
+* For the SSH keys to work, you always need the Yubikey for both credential types!
+
+If you do not need a portable SSH key and do not want to enter the FIDO2 PIN every time, e.g. for frequently used hosts like jumphosts, using non-discoverable SSH keys is preferable.
+
+#### Creating Non-Discoverable SSH Keys
+
+To create a non-discoverable SSH key, simply connect your Yubikey and run the following command in your shell:
+```bash
+ssh-keygen -t ed25519-sk
+```
+
+Choose a meaningful name like `id_ed25519_sk_nd_jumphost`. For example, here `nd` stands for non-discoverable. You can omit the ssh key password, since your key is already secured by FIDO2.
+
+##### Deleting Non-Discoverable SSH Keys
+
+Just delete the key from your SSH directory.
+
+#### Creating Discoverable SSH Keys
+
+To create a discoverable SSH key, simply connect your Yubikey and run the following command in your shell:
+```bash
+ssh-keygen -t ed25519-sk -O resident -O application=ssh:<MeaningfulNameOrIdentifier> -O verify-required
+```
+
+Choose a meaningful name like `id_ed25519_sk_rk_jumphost`. For example, here `rk` stands for discoverable/resident key. You can omit the ssh key password, since your key is already secured by FIDO2.
+
+##### Copying a Discoverable SSH Keys from your Yubikey to your local SSH directory
+
+You just need to run `ssh-keygen -K` with the Yubikey connected. The Yubikey will create an SSH key file named `id_ed25519_sk_rk_<Identifier>`.
+
+##### Deleting Discoverable SSH Keys
+
+For discoverable SSH keys, you will need to delete them from your FIDO2 credentials. Follow these steps:
+
+1. Connect your Yubikey.
+2. Run in a shell: `ykman fido credentials list`
+```bash
+Enter your PIN: 
+ssh:jumphost 0000000000000000000000000000000000000000000000000000000000000000 openssh
+```
+3. Delete the SSH key you no longer need from your FIDO2 credentials: `ykman fido credentials delete ssh:jumphost`
+```bash
+Enter your PIN: 
+Delete credential ssh:jumphost 0000000000000000000000000000000000000000000000000000000000000000 openssh? [y/N]: y
+```
+4. Delete the key from your SSH directory.
+
 ## KeepassXC and Yubikey
 
 You can use a Yubikey for a second secret using Challenge-Response. This works also with [Keepass2Android](https://play.google.com/store/apps/details?id=keepass2android.keepass2android).
@@ -12,7 +88,7 @@ First you need to configure your Yubikeys for Challenge-Response.
 
 > **WARNING:** Use at least two keys and print out and secure your secret!
 
-* Install the [Yubikey Manager](https://www.yubico.com/support/download/yubikey-manager/) and start it. Some OS provide already packages, e.g. Archlinux `yubikey-manager`.
+* Install and run the [Yubikey Manager](https://www.yubico.com/support/download/yubikey-manager/). Some OS already offer packages, e.g. Archlinux `yubikey-manager`.
 * Select "Applications" -> "OTP".
 
 ![Challenge-Response Configuration](img/cr1.png)
@@ -71,6 +147,7 @@ Tap your Yubikey. Your configuration is saved.
 ![Challenge-Response Configuration](img/keepass6.png)
 
 > **WARNING:** Test every newly configured Yubikey for a working Challenge-Response configuration!
+
 
 ## Yubikey and sudo and login
 
