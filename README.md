@@ -4,7 +4,9 @@ We suggest buying at least two [Yubikeys](https://www.yubico.com/products/yubike
 
 ## SSH and Yubikeys
 
-You can secure your SSH keys with [Yubikeys](https://developers.yubico.com/SSH/). This guide will only discuss securing SSH keys using [FIDO2](https://developers.yubico.com/SSH/Securing_SSH_with_FIDO2.html).
+You can secure your SSH keys with [Yubikeys](https://developers.yubico.com/SSH/). This guide will only discuss securing `ed25519` SSH keys using [FIDO2](https://developers.yubico.com/SSH/Securing_SSH_with_FIDO2.html). For other options see this [link](https://developers.yubico.com/SSH/), for `ecdsa` SSH keys see this [link](https://developers.yubico.com/SSH/Securing_SSH_with_FIDO2.html). The followong requirements must be met:
+* OpenSSH 8.2p1, local and remote, if you want to use non-discoverable keys.
+* OpenSSH 8.3, local and remote, if you want to use discoverable keys.
 
 ### Configure Yubikey for FIDO2
 
@@ -77,6 +79,20 @@ Enter your PIN:
 Delete credential ssh:jumphost 0000000000000000000000000000000000000000000000000000000000000000 openssh? [y/N]: y
 ```
 4. Delete the key from your SSH directory.
+
+### Configure SSH Server to accept FIDO2 secured SSH Keys
+
+For SSH to work with FIDO2, you must tell the SSH server to verify it. In tests with Rockylinux 9.1 with OpenSSH 8.7p1, no configuration was necessary. Discoverable keys required verification with the FIDO2 PIN and non-discoverable keys required confirmation by touching the Yubikey.
+
+If you want to test the options, see [PubkeyAuthOptions](https://man.openbsd.org/sshd_config#PubkeyAuthOptions). You can append either `verify-required` or `touch-required` to the and of your key in `~/.ssh/authorized_keys`. Or you can add the `PubkeyAuthOptions verify-required` or `PubkeyAuthOptions touch-required` line to your SSHD configuration file `/etc/ssh/sshd_config`.
+
+To be able to use all Yubikeys, multiple identities can be passed to SSH. SSH will then go through all identities when connecting. Just add several lines of `IdentityFile` in the local configuration `~/.ssh/config`.
+```
+Host humphost1 jumphost2
+    User jumpuser
+    IdentityFile ~/.ssh/id_ed25519_sk-nd-jumphost-key1
+    IdentityFile ~/.ssh/id_ed25519_sk-nd-jumphost-key2
+```
 
 ## KeepassXC and Yubikey
 
