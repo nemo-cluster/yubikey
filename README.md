@@ -92,7 +92,7 @@ If you want to configure your SSH server differently, set `PubkeyAuthOptions ver
 
 To be able to use all Yubikeys, multiple identities can be passed to SSH. SSH will then go through all identities when connecting. Just add several lines of `IdentityFile` in the local configuration `~/.ssh/config`.
 ```
-Host humphost1 jumphost2
+Host jumphost1 jumphost2
     User jumpuser
     IdentityFile ~/.ssh/id_ed25519_sk-nd-jumphost-key1
     IdentityFile ~/.ssh/id_ed25519_sk-nd-jumphost-key2
