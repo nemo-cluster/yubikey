@@ -59,9 +59,9 @@ ssh-keygen -t ed25519-sk -O resident -O application=ssh:<MeaningfulNameOrIdentif
 
 Choose a meaningful name like `id_ed25519_sk_rk_jumphost`. For example, here `rk` stands for discoverable/resident key. You can omit the ssh key password, since your key is already secured by FIDO2.
 
-##### Copying a Discoverable SSH Keys from your Yubikey to your local SSH directory
+##### Copying Discoverable SSH Keys from your Yubikey to your local SSH directory
 
-You just need to run `ssh-keygen -K` with the Yubikey connected. The Yubikey will create an SSH key file named `id_ed25519_sk_rk_<Identifier>`.
+You just need to run `ssh-keygen -K` with the Yubikey connected. The Yubikey will create a SSH key file named `id_ed25519_sk_rk_<Identifier>`.
 
 ##### Deleting Discoverable SSH Keys
 
@@ -80,11 +80,15 @@ Delete credential ssh:jumphost 0000000000000000000000000000000000000000000000000
 ```
 4. Delete the key from your SSH directory.
 
-### Configure SSH Server to accept FIDO2 secured SSH Keys
+### SSH configuration for FIDO2-secured SSH keys
 
-For SSH to work with FIDO2, you must tell the SSH server to verify it. In tests with Rockylinux 9.1 with OpenSSH 8.7p1, no configuration was necessary. Discoverable keys required verification with the FIDO2 PIN and non-discoverable keys required confirmation by touching the Yubikey.
+SSH always requires touch verification when using FIDO2 keys, at least in our tests with OpenSSH version 9.2 on Archlinux. When creating the keys locally with aforementioned SSH, the default flag `touch-required` ([`SSH_SK_USER_PRESENCE_REQ`](https://github.com/openssh/openssh-portable/blob/master/sk-api.h#L26)) is saved into every FIDO2 SSH key.
 
-If you want to test the options, see [PubkeyAuthOptions](https://man.openbsd.org/sshd_config#PubkeyAuthOptions). You can append either `verify-required` or `touch-required` to the and of your key in `~/.ssh/authorized_keys`. Or you can add the `PubkeyAuthOptions verify-required` or `PubkeyAuthOptions touch-required` line to your SSHD configuration file `/etc/ssh/sshd_config`.
+If you used above configuration which is derived from Yubico, `touch-required` will be set for the non-discoverable SSH keys, `verify-required` ([SSH_SK_USER_VERIFICATION_REQD](https://github.com/openssh/openssh-portable/blob/master/sk-api.h#L26)) will be set for the discoverable SSH keys with option `-O verify-required` (if you want to verify your key dump, see [SSH protocol](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.u2f#L87)).
+
+In context of OpenSSH `touch-required` means that you have to touch your Yubikey to verify your presence. `verify-required` means that you need to enter your FIDO2 PIN, you will have to touch your Yubikey to verify your presence as well.
+
+If you want to configure your SSH server differently, set `PubkeyAuthOptions verify-required` or `PubkeyAuthOptions touch-required`, (see [PubkeyAuthOptions](https://man.openbsd.org/sshd_config#PubkeyAuthOptions)). Alternatively, you can append either `verify-required` or `touch-required` to the end of your key in `~/.ssh/authorized_keys` if you do not want to change the configuration of your SSH server. In our tests, these configurations had no effect, since they were probably overridden by the key flags.
 
 To be able to use all Yubikeys, multiple identities can be passed to SSH. SSH will then go through all identities when connecting. Just add several lines of `IdentityFile` in the local configuration `~/.ssh/config`.
 ```
