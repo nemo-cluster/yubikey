@@ -84,7 +84,11 @@ Delete credential ssh:jumphost 0000000000000000000000000000000000000000000000000
 
 SSH always requires touch verification when using FIDO2 keys, at least in our tests with OpenSSH version 9.2 on Archlinux. When creating the keys locally with aforementioned SSH, the default flag `touch-required` ([`SSH_SK_USER_PRESENCE_REQ`](https://github.com/openssh/openssh-portable/blob/master/sk-api.h#L26)) is saved into every FIDO2 SSH key.
 
-If you used above configuration which is derived from Yubico, `touch-required` will be set for the non-discoverable SSH keys, `verify-required` ([SSH_SK_USER_VERIFICATION_REQD](https://github.com/openssh/openssh-portable/blob/master/sk-api.h#L26)) will be set for the discoverable SSH keys with option `-O verify-required` (if you want to verify your key dump, see [SSH protocol](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.u2f#L87)).
+If you used above configuration which is derived from Yubico, `touch-required` will be set for the non-discoverable SSH keys, `verify-required` ([SSH_SK_USER_VERIFICATION_REQD](https://github.com/openssh/openssh-portable/blob/master/sk-api.h#L26)) will be set for the discoverable SSH keys with option `-O verify-required` (if you want to verify your key dump, see [SSH protocol](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.u2f#L87)). Also, the FIDO2 flags are output when using the `-v` option with SSH (`ssh -v`).
+```
+debug1: sshsk_sign: provider "internal", key ED25519-SK, flags 0x01   # touch-required
+debug1: sshsk_sign: provider "internal", key ED25519-SK, flags 0x25   # touch-required, verify-required, resident
+```
 
 In context of OpenSSH `touch-required` means that you have to touch your Yubikey to verify your presence. `verify-required` means that you need to enter your FIDO2 PIN, you will have to touch your Yubikey to verify your presence as well.
 
