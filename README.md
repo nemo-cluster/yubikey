@@ -106,7 +106,7 @@ Host jumphost1 jumphost2
 
 Some applications support only one SSH key. For example, you can define only one `signingkey` in the Git configuration. If you want to use FIDO2-secured SSH keys from both Yubikeys, this is a problem.
 
-With the script [`fido2_set_default_ssh_key`](usr/local/bin/fido2_set_default_ssh_key) you can create a link to a FIDO2-secured SSH key for the currently plugged in Yubikey. This way you can always use the default link when you want to use your FIDO2-secured SSH keys.
+With the script [`fido2_set_default_ssh_key`](usr/local/bin/fido2_set_default_ssh_key) you can create a link to a FIDO2-secured SSH key for the currently plugged in Yubikey. This way you can always use the default link when you want to use your FIDO2-secured SSH keys. The script requires `/usr/bin/ykman` from the Yubikey Manager package.
 
 Just copy the file to `/usr/local/bin/` or somewhere in `$HOME` and copy [`90-yubikey.rules`](etc/udev/rules.d/90-yubikey.rules) to `/etc/udev/rules.d/` on your local machine. Change the placeholder `<USER>` to your local username and change the path of the script if necessary. Now every time you connect one of your Yubikeys, one of your FIDO2-secured SSH keys will be available via the path `~/.ssh/id_ed25519_sk_default`.
 
