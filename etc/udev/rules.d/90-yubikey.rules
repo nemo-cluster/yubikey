@@ -1,0 +1,3 @@
+# Set default ssh fido2 key
+# Change <USER> to your local user
+ACTION=="bind", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1050", ATTRS{idProduct}=="0407", ATTRS{bcdDevice}=="0543", DRIVER=="usb", RUN+="/usr/bin/runuser -u <USER> /usr/local/bin/fido2_set_default_ssh_key"

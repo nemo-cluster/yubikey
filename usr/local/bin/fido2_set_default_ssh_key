@@ -1,0 +1,58 @@
+#!/usr/bin/bash -eu
+#
+##### START CHANGE THIS SECTION #####
+# where to find ssh keys
+SSHDIR="$HOME/.ssh"
+# name for default link name, will be created when key inserted
+# do not use existing file name for DEFAULTSSH, otherwise is will be deleted
+DEFAULTSSH="id_ed25519_sk_default"
+# serial number yubikey 1
+# change to your serial number, use: /usr/bin/ykman list --serials
+YKSN1="12345678"
+# name of fido2 ssh key for yubikey 1
+YKSSH1="id_ed25519_sk_nd_nano"
+# serial number yubikey 2
+# change to your serial number, use: /usr/bin/ykman list --serials
+YKSN2="12345679"
+# name of fido2 ssh key for yubikey 2
+YKSSH2="id_ed25519_sk_nd_nfc"
+### example for keys in ~/.ssh (or $SSHDIR):
+## id_ed25519_sk_default@       # link to fido2 ssh key yk1 or yk2
+## id_ed25519_sk_default.pub@   # link to fido2 ssh public key yk1 or yk2
+## id_ed25519_sk_nd_nano        # fido2 ssh key yubikey 1
+## id_ed25519_sk_nd_nano.pub    # fido2 ssh public key yubikey 1
+## id_ed25519_sk_nd_nfc         # fido2 ssh key yubikey 2
+## id_ed25519_sk_nd_nfc.pub     # fido2 ssh public key yubikey 2
+### end of example
+##### END CHANGE THIS SECTION #####
+
+cd -- "$SSHDIR"
+
+# check if yubikey-manager is installed
+if ! [ -e /usr/bin/ykman ]; then
+    echo "Cannot execute udev rule, /usr/bin/ykman not found, install 'yubikey-manager'" |
+        systemd-cat -t udev-worker
+    exit 1
+fi
+
+# check if $DEFAULTSSH already exists and is a file
+if [ -e "$DEFAULTSSH" ] && ! [ -L "$DEFAULTSSH" ]; then
+    echo "Cannot execute udev rule, $DEFAULTSSH already exists as a file" |
+        systemd-cat -t udev-worker
+    exit 1
+fi
+
+# get link file
+LINK=$(realpath -- "$DEFAULTSSH")
+SN=$(/usr/bin/ykman list --serials)
+
+# create new link when serial number changes
+if [ "$LINK" != "$YKSSH1" ] && [ "$SN" = "$YKSN1" ]; then
+    rm -f "$DEFAULTSSH" "$DEFAULTSSH.pub"
+    ln -s "$YKSSH1" "$DEFAULTSSH"
+    ln -s "$YKSSH1.pub" "$DEFAULTSSH.pub"
+elif [ "$LINK" != "$YKSSH2" ] && [ "$SN" = "$YKSN2" ]; then
+    rm -f "$DEFAULTSSH" "$DEFAULTSSH.pub"
+    ln -s "$YKSSH2" "$DEFAULTSSH"
+    ln -s "$YKSSH2.pub" "$DEFAULTSSH.pub"
+fi
